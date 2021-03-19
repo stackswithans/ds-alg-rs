@@ -1,7 +1,6 @@
 /* A node in the linked list, This struct is generic over the type of
  * the linked list
  */ 
-
 use core::fmt::Display;
 
 struct Node<T>{
@@ -20,7 +19,8 @@ impl<T> LinkedList<T>{
         }
     }
 
-    fn add_node(&mut self, value: T){
+    // Method that inserts a value into the linked list
+    fn insert(&mut self, value: T){
         let new_node = Node{
             value,
             next: None
@@ -31,7 +31,6 @@ impl<T> LinkedList<T>{
                 while node.next.is_some(){
                      node = node.next.as_mut().unwrap();
                 }
-                let node : &mut Node<T> = &mut node.as_mut();
                 node.next = Some(Box::new(new_node)); 
             }
             None => {
@@ -40,9 +39,22 @@ impl<T> LinkedList<T>{
         }
     }
 
-    fn delete_node(&self)
+    /*Method that removes a value from the list
+     * Returns true if value was in the list and
+     * succesfully removed. Returns false in case value was
+     * not found.
+     */
+    //Do i need ownership to delete a value?
+    fn remove(&mut self, value : T) -> bool
+    where
+    T: PartialOrd{
+        let mut node : &mut Option<Box<Node<T>>> = &mut self.head;
+        let retrivied_node :  Box<Node<T>> = node.unwrap();
 
-    fn print_list(&self)
+        false
+    }
+
+    fn print(&self)
     where
     T: Display{
         let mut node : &Option<Box<Node<T>>> = &self.head; 
@@ -56,9 +68,9 @@ impl<T> LinkedList<T>{
 
 fn main(){
     let mut list = LinkedList::new();
-    list.add_node(1);
-    list.add_node(2);
-    list.add_node(3);
-    list.add_node(4);
-    list.print_list();
+    list.insert(1);
+    list.insert(2);
+    list.insert(3);
+    list.insert(4);
+    list.print();
 }
