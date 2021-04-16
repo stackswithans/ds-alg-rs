@@ -1,7 +1,7 @@
 /* A node in the linked list, This struct is generic over the type of
  * the linked list
  */ 
-type NodeT<T> =Option<Box<Node<T>>>; 
+type NodeT<T> = Option<Box<Node<T>>>; 
 
 struct Node<T>{
     value : T,
@@ -48,6 +48,37 @@ T: Copy
         self.len += 1;
     }
 
+    //Removes first occurence of value from the list
+    //Returns false if item is not in the list
+    fn remove(&mut self, value: T) -> bool where T: PartialEq{
+        if self.head.is_none(){
+            return false;
+        }
+        else if self.head.as_ref().unwrap().value == value{
+            //SAFETY: This memory was allocated using a box, so it should be safe to get it back
+            //and deallocate it
+            let head : Box<Node<T>> = unsafe{ Box::from_raw(self.head.as_mut().unwrap().as_mut()) } ;
+            self.head = head.next;
+            self.len -= 1;
+            return true;
+        }
+        let mut node = self.head.as_mut();
+        while node.is_some(){
+            let unwrapped = node.unwrap();
+            let next_node = unwrapped.next.as_mut().unwrap();
+            if next_node.value == value{
+                //SAFETY: This memory was allocated using a box, so it should be safe to get it back
+                //and deallocate it
+                let next_node : Box<Node<T>> = unsafe{ Box::from_raw(next_node.as_mut())} ;
+                unwrapped.next = next_node.next;
+                self.len -= 1;
+                break;
+            }
+            node = unwrapped.next.as_mut();
+        }
+        false
+    }
+
 
     //Returns a None on invalid
     fn get(&mut self, index : usize) -> Option<T>{
@@ -70,10 +101,48 @@ T: Copy
 }
 
 
-
 #[cfg(test)]
 mod tests{
     use super::{LinkedList};
+    #[test]
+    fn test_insert(){
+        let mut list = LinkedList::new();
+        list.insert(4);
+        assert_eq!(list.head.as_ref().unwrap().value, 4);
+    }
+
+    #[test]
+    fn test_remove(){
+        let mut list = LinkedList::new();
+        list.insert(1);
+        list.insert(2);
+        list.insert(3);
+        list.insert(4);
+        list.insert(5);
+        assert_eq!(list.len, 5);
+        assert!(list.remove(1));
+        assert_eq!(list.len, 4);
+        assert_eq!(list.get(0).unwrap(), 2);
+
+        /*
+        assert!(list.remove(2));
+        assert_eq!(list.len, 3);
+        assert_eq!(list.get(0).unwrap(), 3);
+
+        assert!(list.remove(3));
+        assert_eq!(list.len, 2);
+        assert_eq!(list.get(0).unwrap(), 4);
+
+        assert!(list.remove(4));
+        assert_eq!(list.len, 1);
+        assert_eq!(list.get(0).unwrap(), 4);
+        
+        assert!(list.remove(5));
+        assert_eq!(list.len, 0);
+        assert!(list.get(0).is_none());
+        */
+    }
+
     #[test]
     fn test_len(){
         let mut list = LinkedList::new();
@@ -84,13 +153,6 @@ mod tests{
         assert_eq!(list.len, 2);
         list.insert(4);
         assert_eq!(list.len, 3);
-    }
-
-    #[test]
-    fn test_insert(){
-        let mut list = LinkedList::new();
-        list.insert(4);
-        assert_eq!(list.head.as_ref().unwrap().value, 4);
     }
 
     #[test]
