@@ -1,5 +1,5 @@
 [package]
-name = "data_structs"
+name = "ds_alg_rs"
 version = "0.1.0"
 authors = ["Stacks-Mamba <stexor12@gmail.com>"]
 edition = "2018"

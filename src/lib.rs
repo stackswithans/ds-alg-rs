@@ -16,7 +16,6 @@ struct LinkedList<T>{
 
 impl<T> LinkedList<T>
 where
-T: Copy
 {
     fn new() -> LinkedList<T>{
         LinkedList{
@@ -79,7 +78,7 @@ T: Copy
 
 
     //Returns a None on invalid
-    fn get(&mut self, index : usize) -> Option<T>{
+    fn get(&mut self, index : usize) -> Option<&T>{
         if self.len as isize - 1 < index as isize{
            return None;
         }
@@ -90,7 +89,7 @@ T: Copy
                 return None;
             }
             else if counter == index{
-                return Some(node.unwrap().value);
+                return Some(&node.unwrap().value);
             }
             node = node.unwrap().next.as_mut();
             counter += 1;
@@ -120,17 +119,17 @@ mod tests{
         assert_eq!(list.len, 5);
         assert!(list.remove(1));
         assert_eq!(list.len, 4);
-        assert_eq!(list.get(0).unwrap(), 2);
+        assert_eq!(*list.get(0).unwrap(), 2);
 
         assert!(list.remove(3));
         assert_eq!(list.len, 3);
-        assert_eq!(list.get(0).unwrap(), 2);
-        assert_eq!(list.get(1).unwrap(), 4);
+        assert_eq!(*list.get(0).unwrap(), 2);
+        assert_eq!(*list.get(1).unwrap(), 4);
 
         assert!(list.remove(5));
         assert_eq!(list.len, 2);
-        assert_eq!(list.get(0).unwrap(), 2);
-        assert_eq!(list.get(1).unwrap(), 4);
+        assert_eq!(*list.get(0).unwrap(), 2);
+        assert_eq!(*list.get(1).unwrap(), 4);
     }
 
     #[test]
@@ -151,11 +150,11 @@ mod tests{
         assert!(list.get(0).is_none());
         assert!(list.get(4).is_none());
         list.insert(4);
-        assert_eq!(list.get(0).unwrap(), 4);
+        assert_eq!(*list.get(0).unwrap(), 4);
         list.insert(5);
-        assert_eq!(list.get(1).unwrap(), 5);
+        assert_eq!(*list.get(1).unwrap(), 5);
         list.insert(6);
-        assert_eq!(list.get(2).unwrap(), 6);
+        assert_eq!(*list.get(2).unwrap(), 6);
         assert!(list.get(3).is_none());
     }
 
