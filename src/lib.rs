@@ -1,6 +1,7 @@
 /* A node in the linked list, This struct is generic over the type of
  * the linked list
  */ 
+
 type NodeT<T> = Option<Box<Node<T>>>; 
 
 struct Node<T>{
@@ -55,26 +56,23 @@ T: Copy
             return false;
         }
         else if self.head.as_ref().unwrap().value == value{
-            //SAFETY: This memory was allocated using a box, so it should be safe to get it back
-            //and deallocate it
-            let head : Box<Node<T>> = unsafe{ Box::from_raw(self.head.as_mut().unwrap().as_mut()) } ;
+            //Claim ownership of box so that memory can be deallocated
+            let head : Box<Node<T>> = self.head.take().unwrap();
             self.head = head.next;
             self.len -= 1;
             return true;
         }
-        let mut node = self.head.as_mut();
+        let mut node = &mut self.head;
         while node.is_some(){
-            let unwrapped = node.unwrap();
-            let next_node = unwrapped.next.as_mut().unwrap();
-            if next_node.value == value{
-                //SAFETY: This memory was allocated using a box, so it should be safe to get it back
-                //and deallocate it
-                let next_node : Box<Node<T>> = unsafe{ Box::from_raw(next_node.as_mut())} ;
+            let unwrapped = node.as_mut().unwrap();
+            let next_node = &mut unwrapped.next;
+            if next_node.as_ref().unwrap().value == value{
+                let next_node : Box<Node<T>> = next_node.take().unwrap();
                 unwrapped.next = next_node.next;
                 self.len -= 1;
-                break;
+                return true;
             }
-            node = unwrapped.next.as_mut();
+            node = &mut unwrapped.next;
         }
         false
     }
@@ -82,7 +80,7 @@ T: Copy
 
     //Returns a None on invalid
     fn get(&mut self, index : usize) -> Option<T>{
-        if self.len as isize - 1 > index as isize{
+        if self.len as isize - 1 < index as isize{
            return None;
         }
         let mut counter = 0;
@@ -124,23 +122,15 @@ mod tests{
         assert_eq!(list.len, 4);
         assert_eq!(list.get(0).unwrap(), 2);
 
-        /*
-        assert!(list.remove(2));
-        assert_eq!(list.len, 3);
-        assert_eq!(list.get(0).unwrap(), 3);
-
         assert!(list.remove(3));
-        assert_eq!(list.len, 2);
-        assert_eq!(list.get(0).unwrap(), 4);
+        assert_eq!(list.len, 3);
+        assert_eq!(list.get(0).unwrap(), 2);
+        assert_eq!(list.get(1).unwrap(), 4);
 
-        assert!(list.remove(4));
-        assert_eq!(list.len, 1);
-        assert_eq!(list.get(0).unwrap(), 4);
-        
         assert!(list.remove(5));
-        assert_eq!(list.len, 0);
-        assert!(list.get(0).is_none());
-        */
+        assert_eq!(list.len, 2);
+        assert_eq!(list.get(0).unwrap(), 2);
+        assert_eq!(list.get(1).unwrap(), 4);
     }
 
     #[test]
@@ -166,6 +156,7 @@ mod tests{
         assert_eq!(list.get(1).unwrap(), 5);
         list.insert(6);
         assert_eq!(list.get(2).unwrap(), 6);
+        assert!(list.get(3).is_none());
     }
 
 }
