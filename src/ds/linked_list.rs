@@ -1,3 +1,9 @@
+// A linked list, in simple terms, is a linear collection of data elements. These data elements are
+// called nodes. A Linked list is a data structure which in turn can be used to implement other data
+// structures. Thus, it acts as a building block to implement data structures such as stacks, queues,
+// and their variations. A linked list can be perceived as a train or a sequence of nodes in which each
+// node contains one or more data fields and a pointer to the next node.
+// But unlike an array, a linked list does not store its nodes in consecutive memory locations.
 type NodeT<T> = Option<Box<Node<T>>>; 
 
 struct Node<T>{
