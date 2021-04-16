@@ -15,7 +15,6 @@ struct Node<T> {
 
 pub struct DoublyLinkedList<T> {
     head: *mut Node<T>,
-    len: usize,
 }
 
 impl<T> Drop for DoublyLinkedList<T> {
@@ -28,18 +27,26 @@ impl<T> DoublyLinkedList<T> {
     pub fn new() -> DoublyLinkedList<T> {
         DoublyLinkedList {
             head: ptr::null_mut(),
-            len: 0,
         }
+    }
+
+    //Returns the size of the list
+    pub fn size(&mut self) -> usize {
+        let mut i = 0;
+        let mut ptr = self.head;
+        while !ptr.is_null() {
+            //SAFETY: Deref is okay, pointer was obtained from box
+            ptr = unsafe { (*ptr).next };
+            i += 1;
+        }
+        i
     }
 
     //Gets a reference to an element in the list
     pub fn get(&mut self, index: usize) -> Option<&T> {
-        if self.len as isize - 1 < index as isize {
-            return None;
-        }
         let mut i = 0;
         let mut ptr = self.head;
-        while i < self.len {
+        while !ptr.is_null() {
             if i == index {
                 //SAFETY: Deref is okay, pointer was obtained from box
                 // Pointer should not be null as the length of the list
@@ -62,7 +69,6 @@ impl<T> DoublyLinkedList<T> {
         });
         if self.head.is_null() {
             self.head = Box::into_raw(new_node);
-            self.len += 1;
         } else {
             let mut ptr = self.head;
             //SAFETY: Dereferencing this pointer should be okay since
@@ -79,7 +85,6 @@ impl<T> DoublyLinkedList<T> {
                 (*ptr).next = new_node_ptr;
                 (*new_node_ptr).prev = ptr;
             };
-            self.len += 1;
         }
     }
 }
@@ -95,15 +100,15 @@ mod tests {
     }
 
     #[test]
-    fn test_len() {
+    fn test_size() {
         let mut list = DoublyLinkedList::new();
-        assert_eq!(list.len, 0);
+        assert_eq!(list.size(), 0);
         list.append(4);
-        assert_eq!(list.len, 1);
+        assert_eq!(list.size(), 1);
         list.append(4);
-        assert_eq!(list.len, 2);
+        assert_eq!(list.size(), 2);
         list.append(4);
-        assert_eq!(list.len, 3);
+        assert_eq!(list.size(), 3);
     }
 
     #[test]

@@ -4,43 +4,34 @@
 // and their variations. A linked list can be perceived as a train or a sequence of nodes in which each
 // node contains one or more data fields and a pointer to the next node.
 // But unlike an array, a linked list does not store its nodes in consecutive memory locations.
-type NodeT<T> = Option<Box<Node<T>>>; 
+type NodeT<T> = Option<Box<Node<T>>>;
 
-struct Node<T>{
-    value : T,
-    next : NodeT<T>
+struct Node<T> {
+    value: T,
+    next: NodeT<T>,
 }
 
-pub struct LinkedList<T>{
-    head : NodeT<T>,
-    pub len : usize
+pub struct LinkedList<T> {
+    head: NodeT<T>,
+    len: usize,
 }
 
-impl<T> LinkedList<T>
-where
-{
-    pub fn new() -> LinkedList<T>{
-        LinkedList{
-            head: None, 
-            len: 0
-        }
+impl<T> LinkedList<T> {
+    pub fn new() -> LinkedList<T> {
+        LinkedList { head: None, len: 0 }
     }
 
     // Method that appends a value to the end of the list
-    pub fn append(&mut self, value: T){
-        let new_node = Box::new(Node{
-            value,
-            next: None
-        });
+    pub fn append(&mut self, value: T) {
+        let new_node = Box::new(Node { value, next: None });
 
-        if self.head.is_none(){
+        if self.head.is_none() {
             self.head = Some(new_node);
-        }
-        else{
+        } else {
             let mut current = self.head.as_mut();
             let mut tail = loop {
                 let unwrapped = current.unwrap();
-                if unwrapped.next.is_none(){
+                if unwrapped.next.is_none() {
                     break unwrapped;
                 }
                 current = unwrapped.next.as_mut();
@@ -50,26 +41,22 @@ where
         self.len += 1;
     }
     // Inserts a value at the specified index
-    pub fn insert(&mut self, value: T, index: usize){
-        if index > self.len - 1{
-            return; 
+    pub fn insert(&mut self, value: T, index: usize) {
+        if index > self.len - 1 {
+            return;
         }
-        let mut new_node = Box::new(Node{
-            value,
-            next: None
-        });
+        let mut new_node = Box::new(Node { value, next: None });
 
         if index == 0 {
             new_node.next = (&mut self.head).take();
             self.head = Some(new_node);
-        }
-        else{
+        } else {
             let mut i = 1;
             let mut current = &mut self.head.as_mut().unwrap().next;
             while i < self.len {
                 if i == index - 1 {
-                    let current_node = current.as_mut().unwrap(); 
-                    new_node.next = current_node.next.take(); 
+                    let current_node = current.as_mut().unwrap();
+                    new_node.next = current_node.next.take();
                     current_node.next = Some(new_node);
                     break;
                 }
@@ -80,26 +67,27 @@ where
         self.len += 1;
     }
 
-
     //Removes first occurence of value from the list
     //Returns false if item is not in the list
-    pub fn remove(&mut self, value: T) -> bool where T: PartialEq{
-        if self.head.is_none(){
+    pub fn remove(&mut self, value: T) -> bool
+    where
+        T: PartialEq,
+    {
+        if self.head.is_none() {
             return false;
-        }
-        else if self.head.as_ref().unwrap().value == value{
+        } else if self.head.as_ref().unwrap().value == value {
             //Claim ownership of box so that memory can be deallocated
-            let head : Box<Node<T>> = self.head.take().unwrap();
+            let head: Box<Node<T>> = self.head.take().unwrap();
             self.head = head.next;
             self.len -= 1;
             return true;
         }
         let mut node = &mut self.head;
-        while node.is_some(){
+        while node.is_some() {
             let unwrapped = node.as_mut().unwrap();
             let next_node = &mut unwrapped.next;
-            if next_node.as_ref().unwrap().value == value{
-                let next_node : Box<Node<T>> = next_node.take().unwrap();
+            if next_node.as_ref().unwrap().value == value {
+                let next_node: Box<Node<T>> = next_node.take().unwrap();
                 unwrapped.next = next_node.next;
                 self.len -= 1;
                 return true;
@@ -109,40 +97,37 @@ where
         false
     }
 
-
-    //Gets a reference to an element in the array
-    pub fn get(&mut self, index : usize) -> Option<&T>{
-        if self.len as isize - 1 < index as isize{
-           return None;
+    //Gets a reference to an element in the list
+    pub fn get(&mut self, index: usize) -> Option<&T> {
+        if self.len as isize - 1 < index as isize {
+            return None;
         }
         let mut counter = 0;
         let mut node = self.head.as_mut();
-        loop{
-            if counter == self.len{
+        loop {
+            if counter == self.len {
                 return None;
-            }
-            else if counter == index{
+            } else if counter == index {
                 return Some(&node.unwrap().value);
             }
             node = node.unwrap().next.as_mut();
             counter += 1;
-        };
+        }
     }
 }
 
-
 #[cfg(test)]
-mod tests{
-    use super::{LinkedList};
+mod tests {
+    use super::LinkedList;
     #[test]
-    fn test_append(){
+    fn test_append() {
         let mut list = LinkedList::new();
         list.append(4);
         assert_eq!(list.head.as_ref().unwrap().value, 4);
     }
 
     #[test]
-    fn test_insert_at_head(){
+    fn test_insert_at_head() {
         let mut list = LinkedList::new();
         list.append(2);
         list.append(3);
@@ -155,7 +140,7 @@ mod tests{
     }
 
     #[test]
-    fn test_insert_at_between(){
+    fn test_insert_at_between() {
         let mut list = LinkedList::new();
         list.append(2);
         list.append(3);
@@ -169,20 +154,20 @@ mod tests{
     }
 
     #[test]
-    fn test_insert_at_tail(){
+    fn test_insert_at_tail() {
         let mut list = LinkedList::new();
         list.append(2);
         list.append(3);
         list.append(4);
         list.append(5);
-        list.insert(8,3);
+        list.insert(8, 3);
         assert_eq!(list.len, 5);
         assert_eq!(*list.get(3).unwrap(), 8);
         assert_eq!(*list.get(4).unwrap(), 5);
     }
 
     #[test]
-    fn test_remove(){
+    fn test_remove() {
         let mut list = LinkedList::new();
         list.append(1);
         list.append(2);
@@ -206,7 +191,7 @@ mod tests{
     }
 
     #[test]
-    fn test_len(){
+    fn test_len() {
         let mut list = LinkedList::new();
         assert_eq!(list.len, 0);
         list.append(4);
@@ -218,7 +203,7 @@ mod tests{
     }
 
     #[test]
-    fn test_get(){
+    fn test_get() {
         let mut list = LinkedList::new();
         assert!(list.get(0).is_none());
         assert!(list.get(4).is_none());
