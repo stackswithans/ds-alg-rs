@@ -19,7 +19,9 @@ pub struct DoublyLinkedList<T> {
 }
 
 impl<T> Drop for DoublyLinkedList<T> {
-    fn drop(&mut self) {}
+    fn drop(&mut self) {
+        println!("Should be freeing memory");
+    }
 }
 
 impl<T> DoublyLinkedList<T> {
@@ -104,7 +106,6 @@ mod tests {
         assert_eq!(list.len, 3);
     }
 
-    /*
     #[test]
     fn test_get() {
         let mut list = DoublyLinkedList::new();
@@ -118,7 +119,6 @@ mod tests {
         assert_eq!(*list.get(2).unwrap(), 6);
         assert!(list.get(3).is_none());
     }
-    */
 
     /*
     #[test]
