@@ -104,7 +104,7 @@ where
     }
 
 
-    //Returns a None on invalid
+    //Gets a reference to an element in the array
     pub fn get(&mut self, index : usize) -> Option<&T>{
         if self.len as isize - 1 < index as isize{
            return None;
