@@ -4,9 +4,9 @@
 // and their variations. A linked list can be perceived as a train or a sequence of nodes in which each
 // node contains one or more data fields and a pointer to the next node.
 // But unlike an array, a linked list does not store its nodes in consecutive memory locations.
-pub(super) type NodeT<T> = Option<Box<Node<T>>>;
+type NodeT<T> = Option<Box<Node<T>>>;
 
-pub(super) struct Node<T> {
+struct Node<T> {
     value: T,
     next: NodeT<T>,
 }
