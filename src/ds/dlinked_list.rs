@@ -31,7 +31,7 @@ impl<T> DoublyLinkedList<T> {
     }
 
     //Returns the size of the list
-    pub fn len(&mut self) -> usize {
+    pub fn len(&self) -> usize {
         let mut i = 0;
         let mut ptr = self.head;
         while !ptr.is_null() {
@@ -42,8 +42,9 @@ impl<T> DoublyLinkedList<T> {
         i
     }
 
-    //Gets a reference to an element in the list
-    pub fn get(&mut self, index: usize) -> Option<&T> {
+    //Returns a reference to the element at the specified position.
+    //If index is large than list.len(), None is returned.
+    pub fn get(&self, index: usize) -> Option<&T> {
         let mut i = 0;
         let mut ptr = self.head;
         while !ptr.is_null() {
@@ -117,8 +118,7 @@ impl<T> DoublyLinkedList<T> {
     }
 
     pub fn append(&mut self, value: T) {
-        let size = self.len();
-        self.insert(value, size);
+        self.insert(value, self.len());
     }
 }
 
