@@ -4,9 +4,9 @@
 // and their variations. A linked list can be perceived as a train or a sequence of nodes in which each
 // node contains one or more data fields and a pointer to the next node.
 // But unlike an array, a linked list does not store its nodes in consecutive memory locations.
-type NodeT<T> = Option<Box<Node<T>>>;
+pub(super) type NodeT<T> = Option<Box<Node<T>>>;
 
-struct Node<T> {
+pub(super) struct Node<T> {
     value: T,
     next: NodeT<T>,
 }
@@ -23,7 +23,7 @@ impl<T> LinkedList<T> {
 
     //Returns a reference to the element at the specified position.
     //Panics if index is large than list.len()
-    pub fn get(&mut self, index: usize) -> &T {
+    pub fn get(&self, index: usize) -> &T {
         if index >= self.len {
             panic!("Index is larger than the length of the list")
         }
