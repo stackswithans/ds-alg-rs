@@ -15,6 +15,7 @@ struct Node<T> {
 
 pub struct DoublyLinkedList<T> {
     head: *mut Node<T>,
+    len: usize,
 }
 
 impl<T> Drop for DoublyLinkedList<T> {
@@ -27,39 +28,35 @@ impl<T> DoublyLinkedList<T> {
     pub fn new() -> DoublyLinkedList<T> {
         DoublyLinkedList {
             head: ptr::null_mut(),
+            len: 0,
         }
     }
 
-    //Returns the size of the list
+    //Returns the number of elements in the list
     pub fn len(&self) -> usize {
-        let mut i = 0;
-        let mut ptr = self.head;
-        while !ptr.is_null() {
-            //SAFETY: Deref is okay, pointer was obtained from box
-            ptr = unsafe { (*ptr).next };
-            i += 1;
-        }
-        i
+        self.len
     }
 
     //Returns a reference to the element at the specified position.
-    //If index is large than list.len(), None is returned.
-    pub fn get(&self, index: usize) -> Option<&T> {
+    //Panics if index is large than list.len()
+    pub fn get(&self, index: usize) -> &T {
+        if index >= self.len {
+            panic!("Index is larger than the length of the list")
+        }
         let mut i = 0;
         let mut ptr = self.head;
         while !ptr.is_null() {
             if i == index {
-                //SAFETY: Deref is okay, pointer was obtained from box
-                // Pointer should not be null as the length of the list
-                // guarantees that only valid pointers are accessed
-                let value_ref = unsafe { &(*ptr).value };
-                return Some(value_ref);
+                break;
             }
             //SAFETY: Deref is okay, pointer was obtained from box
             ptr = unsafe { (*ptr).next };
             i += 1;
         }
-        None
+        //SAFETY: Deref is okay, pointer was obtained from box
+        // Pointer should not be null as the length of the list
+        // guarantees that only valid pointers are accessed
+        unsafe { &(*ptr).value }
     }
 
     //Inserts a value at the given position.
@@ -115,6 +112,15 @@ impl<T> DoublyLinkedList<T> {
                 };
             }
         }
+        self.len += 1;
+    }
+
+    //Removes the node that contains the first occurence of
+    //value from the list
+    pub fn remove(&mut self, value: T)
+    where
+        T: PartialEq,
+    {
     }
 
     pub fn append(&mut self, value: T) {
@@ -129,7 +135,7 @@ mod tests {
     fn test_append() {
         let mut list = DoublyLinkedList::new();
         list.append(4);
-        assert_eq!(*list.get(0).unwrap(), 4);
+        assert_eq!(*list.get(0), 4);
     }
 
     #[test]
@@ -147,15 +153,19 @@ mod tests {
     #[test]
     fn test_get() {
         let mut list = DoublyLinkedList::new();
-        assert!(list.get(0).is_none());
-        assert!(list.get(4).is_none());
         list.append(4);
-        assert_eq!(*list.get(0).unwrap(), 4);
+        assert_eq!(*list.get(0), 4);
         list.append(5);
-        assert_eq!(*list.get(1).unwrap(), 5);
+        assert_eq!(*list.get(1), 5);
         list.append(6);
-        assert_eq!(*list.get(2).unwrap(), 6);
-        assert!(list.get(3).is_none());
+        assert_eq!(*list.get(2), 6);
+    }
+
+    #[test]
+    #[should_panic(expected = "Index is larger than the length of the list")]
+    fn test_get_panic() {
+        let list = DoublyLinkedList::<i32>::new();
+        list.get(0);
     }
 
     #[test]
@@ -167,8 +177,8 @@ mod tests {
         list.append(5);
         list.insert(1, 0);
         assert_eq!(list.len(), 5);
-        assert_eq!(*list.get(0).unwrap(), 1);
-        assert_eq!(*list.get(1).unwrap(), 2);
+        assert_eq!(*list.get(0), 1);
+        assert_eq!(*list.get(1), 2);
     }
 
     #[test]
@@ -180,9 +190,9 @@ mod tests {
         list.append(5);
         list.insert(10, 2);
         assert_eq!(list.len(), 5);
-        assert_eq!(*list.get(1).unwrap(), 3);
-        assert_eq!(*list.get(2).unwrap(), 10);
-        assert_eq!(*list.get(3).unwrap(), 4);
+        assert_eq!(*list.get(1), 3);
+        assert_eq!(*list.get(2), 10);
+        assert_eq!(*list.get(3), 4);
     }
 
     #[test]
@@ -194,8 +204,8 @@ mod tests {
         list.append(5);
         list.insert(8, 3);
         assert_eq!(list.len(), 5);
-        assert_eq!(*list.get(3).unwrap(), 8);
-        assert_eq!(*list.get(4).unwrap(), 5);
+        assert_eq!(*list.get(3), 8);
+        assert_eq!(*list.get(4), 5);
     }
 
     /*
