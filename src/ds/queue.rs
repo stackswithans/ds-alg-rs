@@ -27,6 +27,10 @@ impl<T> Queue<T> {
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
     //Inserts an element into a queue. The new element is added as the
     //last element of the queue.
     pub fn enqueue(&mut self, value: T) {
@@ -44,11 +48,45 @@ impl<T> Queue<T> {
         }
         self.len += 1;
     }
+
+    //Removes the first element in the queue.
+    //Panics if the queue is empty
+    pub fn dequeue(&mut self) -> T {
+        if self.front.is_none() {
+            panic!("Cannot dequeue! The queue is empty");
+        }
+        if self.len == 1 {
+            //Make sure that the Rc ref
+            //is dropped
+            self.rear = None;
+        }
+        let container = Rc::try_unwrap(self.front.take().unwrap()).ok().unwrap();
+        let node = container.into_inner();
+        self.front = node.next;
+        self.len -= 1;
+        node.value
+    }
 }
 
 #[cfg(test)]
 mod test {
     use super::Queue;
+
+    #[test]
+    fn test_len() {
+        let mut queue = Queue::new();
+        assert_eq!(queue.len(), 0);
+        queue.enqueue(1);
+        assert_eq!(queue.len(), 1);
+        queue.enqueue(2);
+        assert_eq!(queue.len(), 2);
+        queue.dequeue();
+        assert_eq!(queue.len(), 1);
+        queue.dequeue();
+        assert_eq!(queue.len(), 0);
+        queue.enqueue(1);
+        assert_eq!(queue.len(), 1);
+    }
 
     #[test]
     fn test_enqueue() {
@@ -62,5 +100,23 @@ mod test {
         queue.enqueue(2);
         assert_eq!(queue.front.as_mut().unwrap().borrow().value, 1);
         assert_eq!(queue.rear.as_mut().unwrap().borrow().value, 2);
+    }
+
+    #[test]
+    fn test_dequeue() {
+        let mut queue = Queue::new();
+        queue.enqueue(1);
+        queue.enqueue(2);
+        queue.enqueue(3);
+        assert_eq!(queue.dequeue(), 1);
+        assert_eq!(queue.dequeue(), 2);
+        assert_eq!(queue.dequeue(), 3);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot dequeue! The queue is empty")]
+    fn test_dequeue_panics() {
+        let mut queue: Queue<i32> = Queue::new();
+        queue.dequeue();
     }
 }
