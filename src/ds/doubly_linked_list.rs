@@ -122,6 +122,10 @@ impl<T> DoublyLinkedList<T> {
         self.len += 1;
     }
 
+    pub fn append(&mut self, value: T) {
+        self.insert(value, self.len);
+    }
+
     //Removes the element at the given index and returns it
     pub fn remove(&mut self, index: usize) -> T {
         //SAFETY: Deref is okay, pointer was obtained from box
@@ -167,10 +171,6 @@ impl<T> DoublyLinkedList<T> {
             self.len -= 1;
             node.value
         }
-    }
-
-    pub fn append(&mut self, value: T) {
-        self.insert(value, self.len);
     }
 }
 
