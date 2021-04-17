@@ -23,7 +23,7 @@ impl<T> LinkedList<T> {
 
     //Returns a reference to the element at the specified position.
     //Panics if index is large than list.len()
-    pub fn get(&mut self, index: usize) -> &T {
+    pub fn get(&self, index: usize) -> &T {
         if index >= self.len {
             panic!("Index is larger than the length of the list")
         }
