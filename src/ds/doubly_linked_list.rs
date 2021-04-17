@@ -122,6 +122,7 @@ impl<T> DoublyLinkedList<T> {
         self.len += 1;
     }
 
+    //Adds value to the end of the list
     pub fn append(&mut self, value: T) {
         self.insert(value, self.len);
     }
