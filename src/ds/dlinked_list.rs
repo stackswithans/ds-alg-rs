@@ -5,7 +5,6 @@
 // Since each node will be pointed at by two other nodes,
 // we will use raw pointers to avoid dealing with the hassle
 // of having to use the interior mutability pattern
-use std::ptr;
 
 struct Node<T> {
     prev: *mut Node<T>,
@@ -20,14 +19,22 @@ pub struct DoublyLinkedList<T> {
 
 impl<T> Drop for DoublyLinkedList<T> {
     fn drop(&mut self) {
-        println!("Should be freeing memory");
+        let mut ptr = self.head;
+        //SAFETY: Dereferencing this pointer should be okay since
+        // it was obtained from a box.
+        while !ptr.is_null() {
+            //SAFETY: Getting a box from this pointer is okay
+            //because the pointer was obtained from another box.
+            let node = unsafe { Box::from_raw(ptr) };
+            ptr = node.next;
+        }
     }
 }
 
 impl<T> DoublyLinkedList<T> {
     pub fn new() -> DoublyLinkedList<T> {
         DoublyLinkedList {
-            head: ptr::null_mut(),
+            head: std::ptr::null_mut(),
             len: 0,
         }
     }
@@ -64,9 +71,9 @@ impl<T> DoublyLinkedList<T> {
     //to the end of the list.
     pub fn insert(&mut self, value: T, index: usize) {
         let new_node = Box::new(Node {
-            prev: ptr::null_mut(),
+            prev: std::ptr::null_mut(),
             value,
-            next: ptr::null_mut(),
+            next: std::ptr::null_mut(),
         });
         let new_ptr = Box::into_raw(new_node);
         if index == 0 {
@@ -147,7 +154,7 @@ impl<T> DoublyLinkedList<T> {
                 //SAFETY: Dereferencing this pointers should be okay since
                 // it was obtained from a box and should be non null.
                 unsafe {
-                    (*node.prev).next = ptr::null_mut();
+                    (*node.prev).next = std::ptr::null_mut();
                 };
             } else {
                 //SAFETY: Dereferencing these pointers should be okay since
