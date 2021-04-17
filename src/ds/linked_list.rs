@@ -73,32 +73,27 @@ impl<T> LinkedList<T> {
     }
 
     //Removes value at index from the list and returns it
-    pub fn remove(&mut self, value: T) -> bool
-    where
-        T: PartialEq,
-    {
-        if self.head.is_none() {
-            return false;
-        } else if self.head.as_ref().unwrap().value == value {
-            //Claim ownership of box so that memory can be deallocated
-            let head: Box<Node<T>> = self.head.take().unwrap();
+    pub fn remove(&mut self, index: usize) -> T {
+        if index >= self.len {
+            panic!("Index is larger than the length of the list");
+        }
+        if index == 0 {
+            let head = self.head.take().unwrap();
             self.head = head.next;
             self.len -= 1;
-            return true;
-        }
-        let mut node = &mut self.head;
-        while node.is_some() {
-            let unwrapped = node.as_mut().unwrap();
-            let next_node = &mut unwrapped.next;
-            if next_node.as_ref().unwrap().value == value {
-                let next_node: Box<Node<T>> = next_node.take().unwrap();
-                unwrapped.next = next_node.next;
-                self.len -= 1;
-                return true;
+            head.value
+        } else {
+            let mut i = 0;
+            let mut current = &mut self.head;
+            while i < index - 1 {
+                i += 1;
+                current = &mut current.as_mut().unwrap().next;
             }
-            node = &mut unwrapped.next;
+            let next = current.as_mut().unwrap().next.take().unwrap();
+            current.as_mut().unwrap().next = next.next;
+            self.len -= 1;
+            next.value
         }
-        false
     }
 }
 
@@ -181,29 +176,46 @@ mod tests {
         assert_eq!(*list.get(3), 8);
     }
 
-    /*
     #[test]
-    fn test_remove() {
+    #[should_panic(expected = "Index is larger than the length of the list")]
+    fn test_remove_panic() {
+        let mut list = LinkedList::<i32>::new();
+        list.remove(1);
+    }
+
+    #[test]
+    fn test_remove_at_head() {
+        let mut list = LinkedList::new();
+        list.append(1);
+        list.append(2);
+        assert_eq!(list.len(), 2);
+        assert_eq!(list.remove(0), 1);
+        assert_eq!(list.len, 1);
+        assert_eq!(list.remove(0), 2);
+        assert_eq!(list.len(), 0);
+    }
+
+    #[test]
+    fn test_remove_between() {
         let mut list = LinkedList::new();
         list.append(1);
         list.append(2);
         list.append(3);
+        assert_eq!(list.len(), 3);
+        assert_eq!(list.remove(1), 2);
+        assert_eq!(list.len(), 2);
+        assert_eq!(*list.get(0), 1);
+        assert_eq!(*list.get(1), 3);
+    }
+
+    #[test]
+    fn test_remove_at_tail() {
+        let mut list = LinkedList::new();
+        list.append(1);
         list.append(4);
         list.append(5);
-        assert_eq!(list.len, 5);
-        assert!(list.remove(1));
-        assert_eq!(list.len, 4);
-        assert_eq!(*list.get(0), 2);
-
-        assert!(list.remove(3));
-        assert_eq!(list.len, 3);
-        assert_eq!(*list.get(0), 2);
-        assert_eq!(*list.get(1), 4);
-
-        assert!(list.remove(5));
-        assert_eq!(list.len, 2);
-        assert_eq!(*list.get(0), 2);
+        assert_eq!(list.len(), 3);
+        assert_eq!(list.remove(2), 5);
         assert_eq!(*list.get(1), 4);
     }
-    */
 }
