@@ -115,12 +115,51 @@ impl<T> DoublyLinkedList<T> {
         self.len += 1;
     }
 
-    //Removes the node that contains the first occurence of
-    //value from the list
-    pub fn remove(&mut self, value: T)
-    where
-        T: PartialEq,
-    {
+    //Removes the element at the given index and returns it
+    pub fn remove(&mut self, index: usize) -> T {
+        //SAFETY: Deref is okay, pointer was obtained from box
+        // Pointer should not be null as the length of the list
+        // guarantees that only valid pointers are accessed
+        if index >= self.len {
+            panic!("Index is larger than the length of the list");
+        }
+        if index == 0 {
+            //SAFETY: Getting a box from this pointer is okay
+            //because the pointer was obtained from another box.
+            let node = unsafe { Box::from_raw(self.head) };
+            self.head = node.next;
+            self.len -= 1;
+            node.value
+        } else {
+            let mut ptr = self.head;
+            let mut i = 0;
+            while i < index {
+                i += 1;
+                //SAFETY: Dereferencing this pointer should be okay since
+                // it was obtained from a box and this section of the code.
+                // will only be run for non null pointers
+                ptr = unsafe { (*ptr).next };
+            }
+            //SAFETY: Getting a box from this pointer is okay
+            //because the raw pointer was obtained from another box.
+            let node = unsafe { Box::from_raw(ptr) };
+            if i == index - 1 {
+                //SAFETY: Dereferencing this pointers should be okay since
+                // it was obtained from a box and should be non null.
+                unsafe {
+                    (*node.prev).next = ptr::null_mut();
+                };
+            } else {
+                //SAFETY: Dereferencing these pointers should be okay since
+                // there were obtained from boxes and should non null.
+                unsafe {
+                    (*node.prev).next = node.next;
+                    (*node.next).prev = node.prev;
+                };
+            }
+            self.len -= 1;
+            node.value
+        }
     }
 
     pub fn append(&mut self, value: T) {
@@ -208,10 +247,42 @@ mod tests {
         assert_eq!(*list.get(4), 5);
     }
 
+    #[test]
+    #[should_panic(expected = "Index is larger than the length of the list")]
+    fn test_remove_panic() {
+        let mut list = DoublyLinkedList::<i32>::new();
+        list.remove(1);
+    }
+
+    #[test]
+    fn test_remove_at_head() {
+        let mut list = DoublyLinkedList::new();
+        list.append(1);
+        list.append(2);
+        assert_eq!(list.len(), 2);
+        assert_eq!(list.remove(0), 1);
+        assert_eq!(list.len, 1);
+        assert_eq!(list.remove(0), 2);
+        assert_eq!(list.len(), 0);
+    }
+
+    #[test]
+    fn test_remove_between() {
+        let mut list = DoublyLinkedList::new();
+        list.append(1);
+        list.append(2);
+        list.append(3);
+        assert_eq!(list.len(), 3);
+        assert_eq!(list.remove(1), 2);
+        assert_eq!(list.len(), 2);
+        assert_eq!(*list.get(0), 1);
+        assert_eq!(*list.get(1), 3);
+    }
+
     /*
     #[test]
-    fn test_remove(){
-        let mut list = LinkedList::new();
+    fn test_remove_at_tail() {
+        let mut list = DoublyLinkedList::new();
         list.append(1);
         list.append(2);
         list.append(3);
@@ -232,6 +303,5 @@ mod tests {
         assert_eq!(*list.get(0).unwrap(), 2);
         assert_eq!(*list.get(1).unwrap(), 4);
     }
-
     */
 }
