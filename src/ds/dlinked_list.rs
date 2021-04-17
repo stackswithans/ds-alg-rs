@@ -143,7 +143,7 @@ impl<T> DoublyLinkedList<T> {
             //SAFETY: Getting a box from this pointer is okay
             //because the raw pointer was obtained from another box.
             let node = unsafe { Box::from_raw(ptr) };
-            if i == index - 1 {
+            if i == self.len - 1 {
                 //SAFETY: Dereferencing this pointers should be okay since
                 // it was obtained from a box and should be non null.
                 unsafe {
@@ -163,7 +163,7 @@ impl<T> DoublyLinkedList<T> {
     }
 
     pub fn append(&mut self, value: T) {
-        self.insert(value, self.len());
+        self.insert(value, self.len);
     }
 }
 
@@ -279,29 +279,14 @@ mod tests {
         assert_eq!(*list.get(1), 3);
     }
 
-    /*
     #[test]
     fn test_remove_at_tail() {
         let mut list = DoublyLinkedList::new();
         list.append(1);
-        list.append(2);
-        list.append(3);
         list.append(4);
         list.append(5);
-        assert_eq!(list.len, 5);
-        assert!(list.remove(1));
-        assert_eq!(list.len, 4);
-        assert_eq!(*list.get(0).unwrap(), 2);
-
-        assert!(list.remove(3));
-        assert_eq!(list.len, 3);
-        assert_eq!(*list.get(0).unwrap(), 2);
-        assert_eq!(*list.get(1).unwrap(), 4);
-
-        assert!(list.remove(5));
-        assert_eq!(list.len, 2);
-        assert_eq!(*list.get(0).unwrap(), 2);
-        assert_eq!(*list.get(1).unwrap(), 4);
+        assert_eq!(list.len(), 3);
+        assert_eq!(list.remove(2), 5);
+        assert_eq!(*list.get(1), 4);
     }
-    */
 }
